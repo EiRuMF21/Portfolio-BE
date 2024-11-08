@@ -9,18 +9,25 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const languageColors = {
   JavaScript: "#F1E05A",
   TypeScript: "#2F74C0",
-  // Other languages...
+  Python: "#3572A5",
+  Java: "#B07219",
+  Ruby: "#701516",
+  Go: "#00ADD8",
+  PHP: "#4F5D95",
+  C: "#555555",
+  CSharp: "#178600",
+  Swift: "#F05138",
+  Kotlin: "#F6A50F",
+  Rust: "#000000",
+  HTML: "#E44D26",
+  CSS: "#563D7C",
+  Dart: "#00B4AB",
 };
 
 // Helper function to extract image URL from README text
 function extractImageUrl(text) {
   const regex = /!\[.*\]\((https?.*?\.(?:png|jpg|jpeg|gif|svg))\)/i;
   const match = text.match(regex);
-  if (match) {
-    console.log("Extracted image URL:", match[1]); // Debugging log for extracted image URL
-  } else {
-    console.log("No image found in README.md text"); // Log when no image is found
-  }
   return match ? match[1] : "";
 }
 
@@ -68,10 +75,11 @@ app.get("/api/pinned-repos", async (req, res) => {
         const languageColor = languageColors[language] || "#808080";
         const readmeText = item.node.object ? item.node.object.text : "";
 
-        // Debugging log for README content
-        console.log(`README for ${item.node.name}:`, readmeText);
+        // Log README text and check image URL extraction
+        console.log("README Text:", readmeText); // Check if README text is correctly retrieved
 
         const imageUrl = extractImageUrl(readmeText);
+        console.log("Extracted Image URL:", imageUrl); // Check if the image URL is extracted correctly
 
         return {
           name: item.node.name,
@@ -80,7 +88,7 @@ app.get("/api/pinned-repos", async (req, res) => {
           link: item.node.url,
           language: language,
           languageColor: languageColor,
-          imageUrl: imageUrl || "https://via.placeholder.com/150", // Placeholder if no image found
+          imageUrl: imageUrl || "", // Empty string if no image found
         };
       }
     );
@@ -93,3 +101,4 @@ app.get("/api/pinned-repos", async (req, res) => {
 });
 
 module.exports = app;
+
