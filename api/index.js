@@ -5,7 +5,11 @@ const axios = require("axios");
 const app = express();
 app.use(cors());
 
+// Load the GitHub token from environment variables
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+// Log to verify if the token is loaded
+console.log("Loaded GitHub Token:", GITHUB_TOKEN ? "Yes" : "No");
 
 const languageColors = {
   JavaScript: "#F1E05A",
@@ -78,7 +82,12 @@ app.get("/api/pinned-repos", async (req, res) => {
 
     res.json(pinnedRepos);
   } catch (error) {
-    console.error("Error fetching pinned repos:", error);
+    if (error.response) {
+      // Log the GitHub API error response for more details
+      console.error("GitHub API error:", error.response.data);
+    } else {
+      console.error("Error fetching pinned repos:", error.message);
+    }
     res.status(500).json({ error: "Failed to fetch pinned repos" });
   }
 });
