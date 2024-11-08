@@ -16,6 +16,11 @@ const languageColors = {
 function extractImageUrl(text) {
   const regex = /!\[.*\]\((https?.*?\.(?:png|jpg|jpeg|gif|svg))\)/i;
   const match = text.match(regex);
+  if (match) {
+    console.log("Extracted image URL:", match[1]); // Debugging log for extracted image URL
+  } else {
+    console.log("No image found in README.md text"); // Log when no image is found
+  }
   return match ? match[1] : "";
 }
 
@@ -62,6 +67,10 @@ app.get("/api/pinned-repos", async (req, res) => {
           : "Unknown";
         const languageColor = languageColors[language] || "#808080";
         const readmeText = item.node.object ? item.node.object.text : "";
+
+        // Debugging log for README content
+        console.log(`README for ${item.node.name}:`, readmeText);
+
         const imageUrl = extractImageUrl(readmeText);
 
         return {
