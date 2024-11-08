@@ -5,29 +5,19 @@ const axios = require("axios");
 const app = express();
 app.use(cors());
 
-// Load the GitHub token from environment variables
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-
-// Log to verify if the token is loaded
-console.log("Loaded GitHub Token:", GITHUB_TOKEN ? "Yes" : "No");
-
 const languageColors = {
   JavaScript: "#F1E05A",
   TypeScript: "#2F74C0",
-  Python: "#3572A5",
-  Java: "#B07219",
-  Ruby: "#701516",
-  Go: "#00ADD8",
-  PHP: "#4F5D95",
-  C: "#555555",
-  CSharp: "#178600",
-  Swift: "#F05138",
-  Kotlin: "#F6A50F",
-  Rust: "#000000",
-  HTML: "#E44D26",
-  CSS: "#563D7C",
-  Dart: "#00B4AB",
+  // Other languages...
 };
+
+// Helper function to extract image URL from README text
+function extractImageUrl(text) {
+  const regex = /!\[.*\]\((https?.*?\.(?:png|jpg|jpeg|gif|svg))\)/i;
+  const match = text.match(regex);
+  return match ? match[1] : "";
+}
 
 app.get("/api/pinned-repos", async (req, res) => {
   try {
@@ -46,6 +36,11 @@ app.get("/api/pinned-repos", async (req, res) => {
                   primaryLanguage {
                     name
                   }
+                  object(expression: "HEAD:README.md") {
+                    ... on Blob {
+                      text
+                    }
+                  }
                 }
               }
             }
@@ -60,14 +55,14 @@ app.get("/api/pinned-repos", async (req, res) => {
     };
 
     const response = await axios.post(graphqlEndpoint, { query }, { headers });
-    console.log("GitHub API Response:", response.data);
-
     const pinnedRepos = response.data.data.user.pinnedItems.edges.map(
       (item) => {
         const language = item.node.primaryLanguage
           ? item.node.primaryLanguage.name
           : "Unknown";
         const languageColor = languageColors[language] || "#808080";
+        const readmeText = item.node.object ? item.node.object.text : "";
+        const imageUrl = extractImageUrl(readmeText);
 
         return {
           name: item.node.name,
@@ -76,18 +71,14 @@ app.get("/api/pinned-repos", async (req, res) => {
           link: item.node.url,
           language: language,
           languageColor: languageColor,
+          imageUrl: imageUrl || "https://via.placeholder.com/150", // Placeholder if no image found
         };
       }
     );
 
     res.json(pinnedRepos);
   } catch (error) {
-    if (error.response) {
-      // Log the GitHub API error response for more details
-      console.error("GitHub API error:", error.response.data);
-    } else {
-      console.error("Error fetching pinned repos:", error.message);
-    }
+    console.error("Error fetching pinned repos:", error);
     res.status(500).json({ error: "Failed to fetch pinned repos" });
   }
 });
