@@ -26,9 +26,12 @@ const languageColors = {
 
 // Helper function to extract image URL from README text
 function extractImageUrl(text) {
-  const regex = /!\[.*\]\((https?.*?\.(?:png|jpg|jpeg|gif|svg))\)/i;
+  const regex =
+    /!\[.*\]\((https:\/\/github\.com\/(.*?)\/(.*?)\/blob\/main\/(.*?\.(?:png|jpg|jpeg|gif|svg)))\)/i;
   const match = text.match(regex);
-  return match ? match[1] : "";
+  return match
+    ? `https://raw.githubusercontent.com/${match[2]}/${match[3]}/main/${match[4]}`
+    : "";
 }
 
 app.get("/api/pinned-repos", async (req, res) => {
